@@ -1,50 +1,42 @@
-grammar MinhaLinguagem;
+parser grammar ExprParser;
+options { tokenVocab=ExprLexer; }
 
-programa: (declaracao | funcao)* EOF;
+program
+    : stat* EOF
+    ;
 
-declaracao: tipo ID ';' ;
+stat
+    : assignment
+    | expression
+    | printStatement
+    | forStatement
+    ;
 
-tipo: 'int' | 'float' | 'string';
+assignment
+    : ID ASSIGN expression SEMICOLON
+    ;
 
-funcao: tipo ID '(' parametros? ')' bloco;
+expression
+    : ID
+    | INT
+    | funcCall
+    | NOT expression
+    | expression AND expression
+    | expression OR expression
+    ;
 
-parametros: parametro (',' parametro)*;
+funcCall
+    : ID LPAREN (expression (COMMA expression)*)? RPAREN
+    ;
 
-parametro: tipo ID;
+printStatement
+    : PRINT LPAREN expression RPAREN SEMICOLON
+    ;
 
-bloco: '{' instrucao* '}';
+forStatement
+    : FOR LPAREN ID IN expression RANGE expression RPAREN block
+    ;
 
-instrucao: declaracao
-          | atribuicao
-          | comando
-          | retorno
-          | chamadaFuncao
-          ;
-
-atribuicao: ID '=' expressao ';' ;
-
-expressao: termo (('+' | '-') termo)*;
-
-termo: fator (('*' | '/') fator)*;
-
-fator: ID
-     | NUMERO
-     | '(' expressao ')'
-     ;
-
-comando: 'if' '(' expressao ')' bloco ('else' bloco)?
-       | 'while' '(' expressao ')' bloco
-       | 'for' '(' atribuicao? ';' expressao? ';' atribuicao? ')' bloco
-       ;
-
-retorno: 'return' expressao? ';' ;
-
-chamadaFuncao: ID '(' argumentos? ')' ';' ;
-
-argumentos: expressao (',' expressao)*;
-
-ID: [a-zA-Z_][a-zA-Z0-9_]*;
-
-NUMERO: '-'? [0-9]+ ('.' [0-9]+)?;
-
-WS: [ \t\r\n]+ -> skip;
+block
+    : LBRACE stat* RBRACE
+    ;
